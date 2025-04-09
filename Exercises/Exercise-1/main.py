@@ -1,4 +1,7 @@
 import requests
+import os
+from urllib.parse import urlparse
+import zipfile
 
 download_uris = [
     "https://divvy-tripdata.s3.amazonaws.com/Divvy_Trips_2018_Q4.zip",
@@ -12,9 +15,82 @@ download_uris = [
 
 
 def main():
-    # your code here
-    pass
 
+    def is_valid_url(url):
+        try:
+            result = urlparse(url)
+            return all([result.scheme, result.netloc])
+        except:
+            return False
+
+    def download_file(url, downloads_dir):
+
+        if not is_valid_url(url):
+            print(f"Invalid URL: {url}")
+            return None
+        
+        file_name = url.split("/")[-1]
+        file_path =  os.path.join(downloads_dir, file_name)
+
+        if os.path.exists(file_path):
+            print(f"File is already exists: {file_name}")
+            return file_path
+        
+        try:
+            # Send a GET requests to the URL with timeout
+            response = requests.get(url, stream=True, timeout=30)
+            response.raise_for_status()
+
+            # Save the file
+            with open(file_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+
+            print(f"Succesfuly downloaded: {file_name}")
+            return file_path
+        
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading {url}: {str(e)}")
+            return None
+
+
+    def extract_zip_file(zip_path, extract_path):
+        if zip_path and zip_path.endswith('.zip'):
+            try:
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    file_list = zip_ref.namelist()
+                    zip_ref.extractall(extract_path)
+                    os.remove(zip_path)
+
+                    print(f"successfuly extracted files from {os.path.basename(zip_path)}")
+                    extracted_files = [os.path.join(extract_path, f) for f in file_list]
+                    
+                    if extracted_files:
+                        print(f"Extracted files: {extracted_files}")
+                    else:
+                        print(f"No files were extracted")
+            
+            except zipfile.BadZipFile:
+                print(f"Error: {zip_path} is not validd ZIP file")
+                return None
+            except Exception as e:
+                print(f"Error extracting {zip_path}: {str(e)}")
+                return None
+
+
+    # Define the path to the download directory
+    downloads_dir = os.path.join(os.path.dirname(__file__), 'downloads')
+
+    # Create the directory if it doesn't exist
+    if not os.path.exists(downloads_dir):
+        os.makedirs(downloads_dir)
+
+
+    for url in download_uris:
+        downloaded_path = download_file(url, downloads_dir)
+        extract_zip_file(downloaded_path, downloads_dir)
+    
 
 if __name__ == "__main__":
     main()
