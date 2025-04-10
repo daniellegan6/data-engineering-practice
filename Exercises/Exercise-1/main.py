@@ -46,7 +46,7 @@ def download_file(url, downloads_dir):
                 if chunk:
                     f.write(chunk)
 
-        print(f"Succesfuly downloaded: {file_name}")
+        print(f"Successfully downloaded: {file_name}")
         return file_path
     
     except requests.exceptions.RequestException as e:
@@ -60,18 +60,23 @@ def extract_zip_file(zip_path, extract_path):
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 file_list = zip_ref.namelist()
                 zip_ref.extractall(extract_path)
-                os.remove(zip_path)
-
-                print(f"successfuly extracted files from {os.path.basename(zip_path)}")
+                print(f"Successfully extracted files from {os.path.basename(zip_path)}")
                 extracted_files = [os.path.join(extract_path, f) for f in file_list]
                 
                 if extracted_files:
                     print(f"Extracted files: {extracted_files}")
                 else:
-                    print(f"No files were extracted")
+                    print("No files were extracted")
+            
+            # Move os.remove outside the with block
+            try:
+                os.remove(zip_path)
+                print(f"Successfully removed ZIP file: {os.path.basename(zip_path)}")
+            except Exception as e:
+                print(f"Error removing ZIP file {zip_path}: {str(e)}")
         
         except zipfile.BadZipFile:
-            print(f"Error: {zip_path} is not validd ZIP file")
+            print(f"Error: {zip_path} is not valid ZIP file")
             return None
         except Exception as e:
             print(f"Error extracting {zip_path}: {str(e)}")
