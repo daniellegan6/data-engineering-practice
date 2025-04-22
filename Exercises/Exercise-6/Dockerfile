@@ -14,7 +14,7 @@ RUN wget https://archive.apache.org/dist/spark/spark-3.0.1/spark-3.0.1-bin-hadoo
     mv hadoop-aws-3.2.0.jar /spark/jars
 
 
-WORKDIR app
+WORKDIR /app
 COPY . /app
 
 RUN pip3 install markupsafe==1.1.1 cryptography==3.3.2 cython==0.29.21 numpy==1.18.5 && pip3 install -r requirements.txt
