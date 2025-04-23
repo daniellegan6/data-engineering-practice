@@ -9,7 +9,7 @@ tar xvf spark-3.5.0-bin-hadoop3.tgz && \
 mv spark-3.5.0-bin-hadoop3/ /usr/local/spark && \
 ln -s /usr/local/spark spark
 
-WORKDIR app
+WORKDIR /app
 COPY . /app
 
 RUN pip3 install -r requirements.txt --break-system-packages
