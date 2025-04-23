@@ -14,6 +14,8 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
+from data_quality import check_data_quality
+
 # Create a SparkSession
 spark = SparkSession.builder.appName("BikeRideDuration").getOrCreate()
 
@@ -55,10 +57,17 @@ df = df.withColumn(
 )
 
 df = df.withColumn(
-    "date", date_format(col("started_at"), "yyyy-MM-dd")
+    "start_date", date_format(col("started_at"), "yyyy-MM-dd")
 )
 
-daily_durations = df.groupBy("date").agg(
+df = df.withColumn(
+    "end_date", date_format(col("started_at"), "yyyy-MM-dd")
+)
+
+# Data quality checks
+check_data_quality(df)
+
+daily_durations = df.groupBy("start_date").agg(
     _sum("duration_seconds").alias("total_duration_seconds")
 )
 
